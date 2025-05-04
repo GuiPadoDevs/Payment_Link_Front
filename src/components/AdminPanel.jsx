@@ -9,7 +9,8 @@ export default function AdminPanel() {
         setLoading(true);
         try {
             const { data } = await axios.post('https://payment-link-server.vercel.app/api/generate-link');
-            setLinks([...links, data.link]);
+            const fullLink = `${window.location.origin}/pagamento/${data.link.split('/').pop()}`;
+            setLinks([...links, fullLink]);
         } catch (error) {
             console.error('Erro ao gerar link:', error);
             alert('Erro ao gerar link!');
@@ -53,7 +54,19 @@ export default function AdminPanel() {
                                         {link}
                                     </a>
                                     <button
-                                        onClick={() => navigator.clipboard.writeText(link)}
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(link)
+                                                .then(() => alert('Link copiado!'))
+                                                .catch(() => {
+                                                    const tempInput = document.createElement('input');
+                                                    tempInput.value = link;
+                                                    document.body.appendChild(tempInput);
+                                                    tempInput.select();
+                                                    document.execCommand('copy');
+                                                    document.body.removeChild(tempInput);
+                                                    alert('Link copiado!');
+                                                });
+                                        }}
                                         style={copyButtonStyle}
                                     >
                                         Copiar
