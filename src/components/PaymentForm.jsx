@@ -48,7 +48,7 @@ export default function PaymentForm() {
 
         try {
             console.log(formData);
-            await axios.post('http://localhost:3001/api/submit-payment', formData, {
+            await axios.post('https://payment-link-server.vercel.app/api/submit-payment', formData, {
                 onUploadProgress: (e) =>
                     setProgress(Math.round((e.loaded * 100) / (e.total || 1))),
             });

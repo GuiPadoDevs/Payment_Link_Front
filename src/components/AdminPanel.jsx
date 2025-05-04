@@ -8,7 +8,7 @@ export default function AdminPanel() {
     const generateLink = async () => {
         setLoading(true);
         try {
-            const { data } = await axios.post('http://localhost:3001/api/generate-link');
+            const { data } = await axios.post('https://payment-link-server.vercel.app/api/generate-link');
             setLinks([...links, data.link]);
         } catch (error) {
             console.error('Erro ao gerar link:', error);
