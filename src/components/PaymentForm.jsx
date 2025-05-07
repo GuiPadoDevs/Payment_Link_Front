@@ -10,7 +10,6 @@ const schema = z.object({
     nome: z.string().min(3, 'Nome muito curto'),
     email: z.string().email('E-mail inválido'),
     telefone: z.string().min(14, 'Telefone incompleto'),
-    cartao: z.string().min(19, 'Cartão incompleto'),
 });
 
 export default function PaymentForm() {
@@ -42,7 +41,7 @@ export default function PaymentForm() {
 
         const formData = new FormData();
         Object.entries(data).forEach(([key, value]) => formData.append(key, value));
-        formData.append('fotoCartao', fotoRef.current.files[0]);
+        formData.append('fotoDocumento', fotoRef.current.files[0]);
         formData.append('selfieDocumento', selfieRef.current.files[0]);
         formData.append('linkId', linkId);
 
@@ -130,24 +129,7 @@ export default function PaymentForm() {
                 </div>
 
                 <div style={fieldContainer}>
-                    <label style={labelStyle}>Número do Cartão</label>
-                    <Controller
-                        name="cartao"
-                        control={control}
-                        render={({ field }) => (
-                            <IMaskInput
-                                {...field}
-                                mask="0000 0000 0000 0000"
-                                placeholder="0000 0000 0000 0000"
-                                style={inputStyle}
-                            />
-                        )}
-                    />
-                    {errors.cartao && <span style={errorStyle}>{errors.cartao.message}</span>}
-                </div>
-
-                <div style={fieldContainer}>
-                    <label style={labelStyle}>Foto do Cartão</label>
+                    <label style={labelStyle}>Foto do Documento</label>
                     <label style={uploadButtonStyle}>
                         Selecionar Foto
                         <input
@@ -161,7 +143,7 @@ export default function PaymentForm() {
                         />
                     </label>
                     {fotoPreview && (
-                        <img src={fotoPreview} alt="Cartão" style={imagePreviewStyle} />
+                        <img src={fotoPreview} alt="Documento" style={imagePreviewStyle} />
                     )}
                 </div>
 
