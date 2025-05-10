@@ -217,3 +217,9 @@ const copyButtonStyle = {
     cursor: 'pointer',
     transition: 'background-color 0.3s',
 };
+
+const fieldContainer = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+};
