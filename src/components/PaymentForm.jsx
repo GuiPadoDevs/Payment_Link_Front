@@ -150,15 +150,31 @@ export default function PaymentForm() {
                 <div style={fieldContainer}>
                     <label style={labelStyle}>Selfie com Documento</label>
                     <label style={uploadButtonStyle}>
-                        Selecionar Selfie
+                        Tirar Selfie
                         <input
                             type="file"
                             accept="image/*"
                             capture="user"
                             ref={selfieRef}
-                            onChange={(e) => handleFileChange(e, setSelfiePreview)}
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    // Verifica se a imagem foi capturada pela câmera
+                                    if (!file.name || file.name === 'image.jpeg' || file.name === 'image.jpg') {
+                                        handleFileChange(e, setSelfiePreview);
+                                    } else {
+                                        alert('Por favor, tire uma foto usando a câmera.');
+                                        e.target.value = ''; // Limpa o input
+                                        setSelfiePreview(null); // Remove a prévia
+                                    }
+                                }
+                            }}
                             required
                             style={{ display: 'none' }}
+                            onClick={(e) => {
+                                // Limpa o valor para garantir que o onChange seja disparado mesmo para a mesma imagem
+                                e.target.value = '';
+                            }}
                         />
                     </label>
                     {selfiePreview && (
