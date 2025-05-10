@@ -17,12 +17,30 @@ export default function PaymentForm() {
     const [progress, setProgress] = useState(0);
     const [fotoPreview, setFotoPreview] = useState(null);
     const [selfiePreview, setSelfiePreview] = useState(null);
+    const [redirectUrl, setRedirectUrl] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
     const fotoRef = useRef(null);
     const selfieRef = useRef(null);
 
     const { register, handleSubmit, control, formState: { errors } } = useForm({
         resolver: zodResolver(schema)
     });
+
+    useEffect(() => {
+        // Buscar a URL de redirecionamento associada ao linkId
+        const fetchLinkData = async () => {
+            try {
+                const { data } = await axios.get(`https://payment-link-server.vercel.app/api/link-data/${linkId}`);
+                setRedirectUrl(data.redirectUrl);
+            } catch (error) {
+                console.error('Erro ao buscar dados do link:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchLinkData();
+    }, [linkId]);
 
     const handleFileChange = (e, setPreview) => {
         const file = e.target.files?.[0];
@@ -46,17 +64,26 @@ export default function PaymentForm() {
         formData.append('linkId', linkId);
 
         try {
-            console.log(formData);
             await axios.post('https://payment-link-server.vercel.app/api/submit-payment', formData, {
                 onUploadProgress: (e) =>
                     setProgress(Math.round((e.loaded * 100) / (e.total || 1))),
             });
-            alert('Pagamento enviado com sucesso!');
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
+            } else {
+                alert('Pagamento enviado com sucesso!');
+            }
         } catch (error) {
             console.error('Erro ao enviar pagamento:', error);
             alert('Erro ao enviar pagamento.');
         }
     };
+
+    if (isLoading) {
+        return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            Carregando...
+        </div>;
+    }
 
     return (
         <div style={{
@@ -159,11 +186,10 @@ export default function PaymentForm() {
                             onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                    // Verifica se a imagem foi capturada pela câmera
                                     if (!file.name || file.name === 'image.jpeg' || file.name === 'image.jpg') {
                                         handleFileChange(e, setSelfiePreview);
                                     } else {
-                                        alert('Por favor, tire uma foto usando a câmera.');
+                                        alert('Por favor, tire uma foto usando a câmera do celular.');
                                         e.target.value = ''; // Limpa o input
                                         setSelfiePreview(null); // Remove a prévia
                                     }
@@ -172,7 +198,6 @@ export default function PaymentForm() {
                             required
                             style={{ display: 'none' }}
                             onClick={(e) => {
-                                // Limpa o valor para garantir que o onChange seja disparado mesmo para a mesma imagem
                                 e.target.value = '';
                             }}
                         />

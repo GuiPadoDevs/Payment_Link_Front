@@ -4,13 +4,21 @@ import axios from 'axios';
 export default function AdminPanel() {
     const [links, setLinks] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [redirectUrl, setRedirectUrl] = useState('');
 
     const generateLink = async () => {
+        if (!redirectUrl) {
+            alert('Por favor, insira a URL de redirecionamento');
+            return;
+        }
+
         setLoading(true);
         try {
-            const { data } = await axios.post('https://payment-link-server.vercel.app/api/generate-link');
+            const { data } = await axios.post('https://payment-link-server.vercel.app/api/generate-link', {
+                redirectUrl
+            });
             const fullLink = `${window.location.origin}/pagamento/${data.link.split('/').pop()}`;
-            setLinks([...links, fullLink]);
+            setLinks([...links, { url: fullLink, redirectUrl }]);
         } catch (error) {
             console.error('Erro ao gerar link:', error);
             alert('Erro ao gerar link!');
@@ -29,9 +37,22 @@ export default function AdminPanel() {
                 <main style={mainStyle}>
                     <form style={formStyle}>
                         <h1 style={titleStyle}>Painel de Vendas</h1>
+
+                        <div style={fieldContainer}>
+                            <label style={labelStyle}>URL de Redirecionamento</label>
+                            <input
+                                type="url"
+                                value={redirectUrl}
+                                onChange={(e) => setRedirectUrl(e.target.value)}
+                                placeholder="https://exemplo.com/obrigado"
+                                style={inputStyle}
+                                required
+                            />
+                        </div>
+
                         <button
                             onClick={generateLink}
-                            disabled={loading}
+                            disabled={loading || !redirectUrl}
                             style={{
                                 ...buttonStyle,
                                 backgroundColor: loading ? '#ccc' : '#0063F7',
@@ -45,21 +66,26 @@ export default function AdminPanel() {
                         <ul style={listStyle}>
                             {links.map((link, index) => (
                                 <li key={index} style={listItemStyle}>
-                                    <a
-                                        href={link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={linkStyle}
-                                    >
-                                        {link}
-                                    </a>
+                                    <div>
+                                        <a
+                                            href={link.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={linkStyle}
+                                        >
+                                            {link.url}
+                                        </a>
+                                        <div style={{ fontSize: '12px', color: '#666' }}>
+                                            Redireciona para: {link.redirectUrl}
+                                        </div>
+                                    </div>
                                     <button
                                         onClick={() => {
-                                            navigator.clipboard.writeText(link)
+                                            navigator.clipboard.writeText(link.url)
                                                 .then(() => alert('Link copiado!'))
                                                 .catch(() => {
                                                     const tempInput = document.createElement('input');
-                                                    tempInput.value = link;
+                                                    tempInput.value = link.url;
                                                     document.body.appendChild(tempInput);
                                                     tempInput.select();
                                                     document.execCommand('copy');
@@ -98,8 +124,8 @@ const headerStyle = {
     boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
     width: '90%',
     maxWidth: '800px',
-    margin: '20px auto 40px', // Centraliza e dá espaçamento em cima e embaixo
-    borderRadius: '16px', // Bordas arredondadas
+    margin: '20px auto 40px',
+    borderRadius: '16px',
 };
 
 const headerTitleStyle = {
